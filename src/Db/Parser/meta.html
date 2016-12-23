@@ -1,0 +1,111 @@
+namespace <?=$namespace?>;
+use MongoBinData;
+class <?=$classShortName?> {
+
+    public $fields = [
+        <?php foreach($fields as $v):?>
+        '<?=$v['name']?>' => '<?=$v['type']?>',
+        <?php endforeach;?>
+    ];
+
+    protected $id;
+    protected $v;
+    protected $ct;
+    protected $mt;
+
+    <?php foreach($fields as $v):?>
+    public $<?=$v['name']?>;
+    <?php endforeach;?>
+
+    public function __construct(){
+        $this->ct = null;
+        $this->mt = null;
+        $this->v = 0;
+        <?php foreach($fields as $v):?>
+        <?php if($v['type'] == 'STRING'):?>
+        $this-><?=$v['name']?> = '<?=$v['default']?>';
+        <?php elseif($v['type'] == 'ARRAY'):?>
+        $this-><?=$v['name']?> = [];
+        <?php elseif(strlen($v['default'])>0):?>
+        $this-><?=$v['name']?> = <?=$v['default']?>;
+        <?php endif;?>
+        <?php endforeach;?>
+    }
+
+    public function getId() {
+        return $this->id;
+    }
+
+    public function setId($id) {
+        $this->id = $id;
+        return $this;
+    }
+
+    public function getCt(){
+        return $this->ct;
+    }
+
+    public function setCt($cTime){
+        $this->ct = $cTime;
+        return $this;
+    }
+
+    public function getMt(){
+        return $this->mt;
+    }
+
+    public function setMt($mTime){
+        $this->mt = $mTime;
+        return $this;
+    }
+
+    public function getV(){
+        return $this->v;
+    }
+
+    public function setV($ver){
+        $this->v = $ver;
+        return $this;
+    }
+
+    <?php foreach($fields as $v):?>
+        public function get<?=ucfirst($v['name'])?>(){
+        return $this-><?=$v['name']?>;
+    }
+
+    public function set<?=ucfirst($v['name'])?>(<?php if($v['type'] == 'ARRAY') echo 'Array ';?>$val){
+        <?php if ($v['type']=='BINARY'):?>
+        $this-><?=$v['name']?> = ($val instanceof MongoBinData) ? $val->bin : $val;
+        <?php else:?>
+        $this-><?=$v['name']?> = $val;
+        <?php endif;?>
+        return $this;
+    }
+    <?php endforeach;?>
+
+    public function fromArray(& $data) {
+        isset($data['ct']) && $this->setCt($data['ct']);
+        isset($data['mt']) && $this->setMt($data['mt']);
+        isset($data['v']) && $this->setV($data['v']);
+
+        <?php foreach($fields as $v):?>
+        isset($data['<?=$v['name']?>']) && $this->set<?=ucfirst($v['name'])?>($data['<?=$v['name']?>']);
+        <?php endforeach;?>
+    }
+
+    public function toArray($dbType=false){
+        return array(
+            'ct' => $this->ct,
+            'mt' => $this->mt,
+            'v' => $this->v,
+            <?php foreach($fields as $v):?>
+            <?php if ($v['type']=='BINARY'):?>
+            '<?=$v['name']?>' => $dbType == 'mongo' ? new MongoBinData($this-><?=$v['name']?>) : $this-><?=$v['name']?>,
+            <?php else:?>
+            '<?=$v['name']?>' => $this-><?=$v['name']?>,
+            <?php endif;?>
+            <?php endforeach;?>
+        );
+    }
+
+}

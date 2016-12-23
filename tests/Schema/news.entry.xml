@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<meta>
+    <fields>
+        <field name="title" type="STRING"></field>
+        <field name="content" type="STRING"></field>
+        <field name="keywords" type="STRING"></field>
+    </fields>
+</meta>
